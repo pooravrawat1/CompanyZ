@@ -1,2 +1,2 @@
 # CompanyZ
-A full stack project for Software Development Class
+CSC3350 Final Development Project
