@@ -1,3 +1,4 @@
+// paqazackage src;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -8,17 +9,17 @@ import java.util.Scanner;
 // - Finish implementation of editing (so far, only first and last name are completed)
 // - Add options to editing menu (salary, email)
 // - addresses?
-public class App extends employee {
+public class App {
 	public static void main(String[] args) throws Exception {
-		System.out.println("\nWELCOME! LOGIN OPTIONS\n-----------------------\n- HR ADMIN (EDITING) - ENTER 1\n- EMPLOYEE (VIEWING) - ENTER 2\n\nENTER COMMAND: ");
+		System.out.println("\nWELCOME! LOGIN OPTIONS\n------------------------------------------\n- HR ADMIN (EDITING) - ENTER 1\n- EMPLOYEE (VIEWING) - ENTER 2\n\nENTER COMMAND: ");
 		
 		Scanner scn = new Scanner(System.in);
 		int loginChoice = scn.nextInt();
-
+		
 		switch (loginChoice) {
-			case 1 -> adminSearchEdit();
+			case 1 -> adminSearchEdit(); //implement user auth for admin
 			
-			case 2 -> employeeSearch();
+			case 2 -> employeeSearch(); //implement user auth for admin
 		}
 	
 		scn.close();
@@ -26,7 +27,7 @@ public class App extends employee {
 	}
 
 	public static void adminSearchEdit() {
-		System.out.println("\nEMPLOYEE SEARCH AND EDIT OPTIONS\n-----------------------\n- Name\n- DOB\n- SSN\n- EmpID\n\nENTER COMMAND: ");
+		System.out.println("\nEMPLOYEE SEARCH AND EDIT OPTIONS\n------------------------------------------\n- Name\n- DOB\n- SSN\n- EmpID\n\nENTER COMMAND: ");
 		Scanner scn = new Scanner(System.in);
 		String searchChoice = scn.nextLine().toUpperCase();
 
@@ -42,7 +43,7 @@ public class App extends employee {
 			while (!"Q".equals(searchChoice)) {
 				switch (searchChoice) {
 					case "NAME" -> {
-						System.out.println("\nEMPLOYEE SEARCH OPTIONS: NAME\n-----------------------\n- To search via first name, enter 'FIRST'.\n- To search via last name, enter 'LAST'. \n- To search via both first and last name, enter 'BOTH'.\n\nENTER COMMAND:");
+						System.out.println("\nEMPLOYEE SEARCH OPTIONS: NAME\n------------------------------------------\n- To search via first name, enter 'FIRST'.\n- To search via last name, enter 'LAST'. \n- To search via both first and last name, enter 'BOTH'.\n\nENTER COMMAND:");
 						scn = new Scanner(System.in);
 						searchChoice = scn.nextLine().toUpperCase();
 						switch (searchChoice) {
