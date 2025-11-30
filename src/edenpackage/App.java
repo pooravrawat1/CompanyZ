@@ -22,10 +22,6 @@ public class App {
 	static String tableDecorator = "+--------+------------------------+-----------------------+-----------------------------------+-------------+-----------------+--------------+%n";
 	static String tableHeader = "| EmpID  | First Name             | Last Name             | Email                             | DOB         | Salary          | SSN          |%n";
 	static String queryDecorator = "+--------+--------+--------+--------+";
-	static String url = "jdbc:mysql://localhost:3306/employeeData2"; //remember to add jar connection
-		// may need to edit the database name later (employee vs companyzmaster vs employeedata2)
-	static String user = "root";
-	static String password = "pass";
 
 	
 	static String welcomeBanner =  """
@@ -82,6 +78,7 @@ public class App {
 		}
 	
 		scn.close();
+		DatabaseManager.closeConnection();
 
 	}
 	public static void adminSearch() {
@@ -91,10 +88,7 @@ public class App {
 
 		
 		StringBuilder output = new StringBuilder("");
-		try (Connection myConn = DriverManager.getConnection(url, user, password)) {
-			Statement myStmt = myConn.createStatement();
-
-
+		try {
 			while (!"Q".equals(searchChoice)) {
 				switch (searchChoice) {
 					case "NAME" -> {
@@ -105,40 +99,52 @@ public class App {
 							case "FIRST" -> {
 								System.out.println("\nENTER FIRST NAME:");
 								String FnameData = scn.nextLine();
-								String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
-										"FROM employees WHERE Fname = '%s'", FnameData);
+								String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
+										"FROM employees WHERE Fname = ?";
 								
-								
-								
-
 								System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
 								
-								
-								ResultSet myRS = myStmt.executeQuery(sqlcommand);
-								while (myRS.next()) {
-									output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-									System.out.print(output.toString());
-									System.out.format(tableDecorator);
-									output.setLength(0);
+								try {
+									ResultSet myRS = DatabaseManager.executeQuery(sql, FnameData);
+									boolean hasResults = false;
+									while (myRS.next()) {
+										hasResults = true;
+										output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+										System.out.print(output.toString());
+										System.out.format(tableDecorator);
+										output.setLength(0);
+									}
+									if (!hasResults) {
+										System.out.println(ANSI.RED + "No employees found with first name: " + FnameData + ANSI.RESET);
+									}
+								} catch (SQLException e) {
+									System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 								}
-								
 							}
 							
 							case "LAST" -> {
 								System.out.println("\nENTER LAST NAME:");
 								String LnameData = scn.nextLine();
-								String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
-										"FROM employees WHERE Lname = '%s'", LnameData);
+								String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
+										"FROM employees WHERE Lname = ?";
 										
 								System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
 								
-								
-								ResultSet myRS = myStmt.executeQuery(sqlcommand);
-								while (myRS.next()) {
-									output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-									System.out.print(output.toString());
-									System.out.format(tableDecorator);
-									output.setLength(0);
+								try {
+									ResultSet myRS = DatabaseManager.executeQuery(sql, LnameData);
+									boolean hasResults = false;
+									while (myRS.next()) {
+										hasResults = true;
+										output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+										System.out.print(output.toString());
+										System.out.format(tableDecorator);
+										output.setLength(0);
+									}
+									if (!hasResults) {
+										System.out.println(ANSI.RED + "No employees found with last name: " + LnameData + ANSI.RESET);
+									}
+								} catch (SQLException e) {
+									System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 								}
 							}
 							
@@ -147,74 +153,108 @@ public class App {
 								String FnameData = scn.nextLine();
 								System.out.println("\nENTER LAST NAME:");
 								String LnameData = scn.nextLine();
-								String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
-										"FROM employees WHERE Fname = '%s' AND Lname = '%s'", FnameData, LnameData);
+								String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
+										"FROM employees WHERE Fname = ? AND Lname = ?";
 
-								
 								System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
 								
-								ResultSet myRS = myStmt.executeQuery(sqlcommand);
-								while (myRS.next()) {
-									output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-									System.out.print(output.toString());
-									System.out.format(tableDecorator);
-									output.setLength(0);
+								try {
+									ResultSet myRS = DatabaseManager.executeQuery(sql, FnameData, LnameData);
+									boolean hasResults = false;
+									while (myRS.next()) {
+										hasResults = true;
+										output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+										System.out.print(output.toString());
+										System.out.format(tableDecorator);
+										output.setLength(0);
+									}
+									if (!hasResults) {
+										System.out.println(ANSI.RED + "No employees found with name: " + FnameData + " " + LnameData + ANSI.RESET);
+									}
+								} catch (SQLException e) {
+									System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 								}
 							}
 							
 						}
 					}
 					
-					case "DOB" -> { 
-						// still broken
-						System.out.println("\nENTER DOB IN THE FORMAT OF YYYY-MM-DD:");
-						String DOBstring = scn.nextLine();
-						String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
-								"FROM employees WHERE DOB = '%s'", DOBstring);
-							
-						System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);	
-								
-						ResultSet myRS = myStmt.executeQuery(sqlcommand);
-						while (myRS.next()) {
-							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-							System.out.print(output.toString());
-							System.out.format(tableDecorator);
-							output.setLength(0);
-						}
-					}
-
-					case "SSN" -> {
-						System.out.println("\nENTER SSN IN THE FORMAT OF XXX-XX-XXXX:");
-						String SSN = scn.nextLine();
-						String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE SSN = '%s'", SSN);
+				case "DOB" -> { 
+					System.out.println("\nENTER DOB IN THE FORMAT OF YYYY-MM-DD:");
+					String DOBstring = scn.nextLine();
+					String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
+							"FROM employees WHERE DOB = ?";
 						
-						System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
-								
-						ResultSet myRS = myStmt.executeQuery(sqlcommand);
-						while (myRS.next()) {
-							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-							System.out.print(output.toString());
-							System.out.format(tableDecorator);
-							output.setLength(0);
-						}
-					}
-
-					case "EMPID" -> {
-						System.out.println("\nENTER EMPID:");
-						int EmpID = scn.nextInt();
-						String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE empid = %d", EmpID);
+					System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);	
 						
-						System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
-								
-						ResultSet myRS = myStmt.executeQuery(sqlcommand);
+					try {
+						ResultSet myRS = DatabaseManager.executeQuery(sql, DOBstring);
+						boolean hasResults = false;
 						while (myRS.next()) {
+							hasResults = true;
 							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
 							System.out.print(output.toString());
 							System.out.format(tableDecorator);
 							output.setLength(0);
 						}
+						if (!hasResults) {
+							System.out.println(ANSI.RED + "No employees found with DOB: " + DOBstring + ANSI.RESET);
+						}
+					} catch (SQLException e) {
+						System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 					}
 				}
+
+				case "SSN" -> {
+					System.out.println("\nENTER SSN IN THE FORMAT OF XXX-XX-XXXX:");
+					String SSN = scn.nextLine();
+					String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE SSN = ?";
+					
+					System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
+						
+					try {
+						ResultSet myRS = DatabaseManager.executeQuery(sql, SSN);
+						boolean hasResults = false;
+						while (myRS.next()) {
+							hasResults = true;
+							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+							System.out.print(output.toString());
+							System.out.format(tableDecorator);
+							output.setLength(0);
+						}
+						if (!hasResults) {
+							System.out.println(ANSI.RED + "No employees found with SSN: " + SSN + ANSI.RESET);
+						}
+					} catch (SQLException e) {
+						System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
+					}
+				}
+
+				case "EMPID" -> {
+					System.out.println("\nENTER EMPID:");
+					int EmpID = scn.nextInt();
+					String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE empid = ?";
+					
+					System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
+						
+					try {
+						ResultSet myRS = DatabaseManager.executeQuery(sql, EmpID);
+						boolean hasResults = false;
+						while (myRS.next()) {
+							hasResults = true;
+							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+							System.out.print(output.toString());
+							System.out.format(tableDecorator);
+							output.setLength(0);
+						}
+						if (!hasResults) {
+							System.out.println(ANSI.RED + "No employee found with ID: " + EmpID + ANSI.RESET);
+						}
+					} catch (SQLException e) {
+						System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
+					}
+				}
+			}
 
 				System.out.println(ANSI.GREEN + "\nWOULD YOU LIKE TO SEARCH AGAIN, EDIT AN EMPLOYEE'S INFORMATION, OR QUIT?\n" + ANSI.RESET + queryDecorator + "\n+ SEARCH AGAIN - ENTER 1\n+ EDIT EMPLOYEE INFORMATION - ENTER 2\n+ QUIT - ENTER 3 \n\nENTER COMMAND: ");	
 				scn = new Scanner(System.in);
@@ -235,10 +275,8 @@ public class App {
 				// System.out.println(ANSI.GREEN + "\nEMPLOYEE SEARCH OPTIONS\n" + ANSI.RESET + queryDecorator + "\n+ Name\n+ DOB\n+ SSN\n+ EmpID\n\nENTER COMMAND: ");		
 			}
 			
-		myConn.close();
 		} catch (Exception e) {
-			// System.out.println("ERROR " + e.getLocalizedMessage());
-		} finally {
+			System.err.println(ANSI.RED + "An error occurred: " + e.getMessage() + ANSI.RESET);
 		}
 		
 	}
@@ -251,9 +289,7 @@ public class App {
 
 		
 		StringBuilder output = new StringBuilder("");
-		try (Connection myConn = DriverManager.getConnection(url, user, password)) {
-			Statement myStmt = myConn.createStatement();
-
+		try {
 			while (!"Q".equals(searchChoice)) {
 				switch (searchChoice) {
 					case "NAME" -> {
@@ -264,40 +300,52 @@ public class App {
 							case "FIRST" -> {
 								System.out.println("\nENTER FIRST NAME:");
 								String FnameData = scn.nextLine();
-								String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
-										"FROM employees WHERE Fname = '%s'", FnameData);
+								String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
+										"FROM employees WHERE Fname = ?";
 								
-								
-								
-
 								System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
 								
-								
-								ResultSet myRS = myStmt.executeQuery(sqlcommand);
-								while (myRS.next()) {
-									output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-									System.out.print(output.toString());
-									System.out.format(tableDecorator);
-									output.setLength(0);
+								try {
+									ResultSet myRS = DatabaseManager.executeQuery(sql, FnameData);
+									boolean hasResults = false;
+									while (myRS.next()) {
+										hasResults = true;
+										output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+										System.out.print(output.toString());
+										System.out.format(tableDecorator);
+										output.setLength(0);
+									}
+									if (!hasResults) {
+										System.out.println(ANSI.RED + "No employees found with first name: " + FnameData + ANSI.RESET);
+									}
+								} catch (SQLException e) {
+									System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 								}
-								
 							}
 							
 							case "LAST" -> {
 								System.out.println("\nENTER LAST NAME:");
 								String LnameData = scn.nextLine();
-								String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
-										"FROM employees WHERE Lname = '%s'", LnameData);
+								String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
+										"FROM employees WHERE Lname = ?";
 										
 								System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
 								
-								
-								ResultSet myRS = myStmt.executeQuery(sqlcommand);
-								while (myRS.next()) {
-									output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-									System.out.print(output.toString());
-									System.out.format(tableDecorator);
-									output.setLength(0);
+								try {
+									ResultSet myRS = DatabaseManager.executeQuery(sql, LnameData);
+									boolean hasResults = false;
+									while (myRS.next()) {
+										hasResults = true;
+										output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+										System.out.print(output.toString());
+										System.out.format(tableDecorator);
+										output.setLength(0);
+									}
+									if (!hasResults) {
+										System.out.println(ANSI.RED + "No employees found with last name: " + LnameData + ANSI.RESET);
+									}
+								} catch (SQLException e) {
+									System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 								}
 							}
 							
@@ -306,18 +354,26 @@ public class App {
 								String FnameData = scn.nextLine();
 								System.out.println("\nENTER LAST NAME:");
 								String LnameData = scn.nextLine();
-								String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
-										"FROM employees WHERE Fname = '%s' AND Lname = '%s'", FnameData, LnameData);
+								String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
+										"FROM employees WHERE Fname = ? AND Lname = ?";
 
-								
 								System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
 								
-								ResultSet myRS = myStmt.executeQuery(sqlcommand);
-								while (myRS.next()) {
-									output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-									System.out.print(output.toString());
-									System.out.format(tableDecorator);
-									output.setLength(0);
+								try {
+									ResultSet myRS = DatabaseManager.executeQuery(sql, FnameData, LnameData);
+									boolean hasResults = false;
+									while (myRS.next()) {
+										hasResults = true;
+										output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+										System.out.print(output.toString());
+										System.out.format(tableDecorator);
+										output.setLength(0);
+									}
+									if (!hasResults) {
+										System.out.println(ANSI.RED + "No employees found with name: " + FnameData + " " + LnameData + ANSI.RESET);
+									}
+								} catch (SQLException e) {
+									System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 								}
 							}
 							
@@ -328,51 +384,78 @@ public class App {
 						System.out.println("ENTER DOB:");
 						String DOBstring = scn.nextLine();
 						
-						String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
-								"FROM employees WHERE DOB = '%s'", DOBstring);
-						System.out.println(sqlcommand);
-						System.out.printf(tableDecorator);
+						String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " +
+								"FROM employees WHERE DOB = ?";
 						
 						System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
-								
-						ResultSet myRS = myStmt.executeQuery(sqlcommand);
-						while (myRS.next()) {
-							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-							System.out.print(output.toString());
-							System.out.format(tableDecorator);
-							output.setLength(0);
+						
+						try {		
+							ResultSet myRS = DatabaseManager.executeQuery(sql, DOBstring);
+							boolean hasResults = false;
+							while (myRS.next()) {
+								hasResults = true;
+								output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+								System.out.print(output.toString());
+								System.out.format(tableDecorator);
+								output.setLength(0);
+							}
+							if (!hasResults) {
+								System.out.println(ANSI.RED + "No employees found with DOB: " + DOBstring + ANSI.RESET);
+							}
+						} catch (SQLException e) {
+							System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 						}
+					}
+
 					}
 
 					case "SSN" -> {
 						System.out.println("ENTER SSN:");
 						String SSN = scn.nextLine();
-						String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE SSN = '%s'", SSN);
+						String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE SSN = ?";
 						
 						System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
-								
-						ResultSet myRS = myStmt.executeQuery(sqlcommand);
-						while (myRS.next()) {
-							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-							System.out.print(output.toString());
-							System.out.format(tableDecorator);
-							output.setLength(0);
+						
+						try {		
+							ResultSet myRS = DatabaseManager.executeQuery(sql, SSN);
+							boolean hasResults = false;
+							while (myRS.next()) {
+								hasResults = true;
+								output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+								System.out.print(output.toString());
+								System.out.format(tableDecorator);
+								output.setLength(0);
+							}
+							if (!hasResults) {
+								System.out.println(ANSI.RED + "No employees found with SSN: " + SSN + ANSI.RESET);
+							}
+						} catch (SQLException e) {
+							System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 						}
 					}
 
 					case "EMPID" -> {
 						System.out.println("ENTER EMPID:");
 						int EmpID = scn.nextInt();
-						String sqlcommand = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE empid = %d", EmpID);
+						String sql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE empid = ?";
 						
 						System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
-								
-						ResultSet myRS = myStmt.executeQuery(sqlcommand);
-						while (myRS.next()) {
-							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-							System.out.print(output.toString());
-							System.out.format(tableDecorator);
-							output.setLength(0);
+						
+						try {		
+							ResultSet myRS = DatabaseManager.executeQuery(sql, EmpID);
+							boolean hasResults = false;
+							while (myRS.next()) {
+								hasResults = true;
+								output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+								System.out.print(output.toString());
+								System.out.format(tableDecorator);
+								output.setLength(0);
+							}
+							if (!hasResults) {
+								System.out.println(ANSI.RED + "No employee found with ID: " + EmpID + ANSI.RESET);
+							}
+						} catch (SQLException e) {
+							System.err.println(ANSI.RED + "Search failed: " + e.getMessage() + ANSI.RESET);
 						}
 					}
 				}
@@ -383,11 +466,8 @@ public class App {
 				System.out.println(ANSI.GREEN + "\nEMPLOYEE SEARCH OPTIONS\n" + ANSI.RESET + queryDecorator + "\n+ Name\n+ DOB\n+ SSN\n+ EmpID\n\nENTER COMMAND: ");		
 			}
 			
-		
-		myConn.close();
 		} catch (Exception e) {
-			// System.out.println("ERROR " + e.getLocalizedMessage());
-		} finally {
+			System.err.println(ANSI.RED + "An error occurred: " + e.getMessage() + ANSI.RESET);
 		}
 	}
 
@@ -399,10 +479,7 @@ public class App {
 
 		
 		StringBuilder output = new StringBuilder("");
-		try (Connection myConn = DriverManager.getConnection(url, user, password)) {
-		 	Statement myStmt = myConn.createStatement();
-			
-
+		try {
 			System.out.println(ANSI.GREEN + "\nEDIT OPTIONS\n" + ANSI.RESET + queryDecorator + "\n+ Name\n+ DOB\n+ SSN\n+ EmpID\n\nENTER COMMAND: ");		
 			scn = new Scanner(System.in);
 			String editChoice = scn.nextLine();
@@ -417,20 +494,29 @@ public class App {
 							System.out.println("\nENTER NEW VALUE - FIRST NAME:");
 							String FnameData = scn.nextLine();
 							
-							String sqlcommand1 = String.format("UPDATE employees " + "SET Fname = '%s'" + " WHERE empid = %d", FnameData, EmpID);
-							String sqlcommand2 = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE empid = %d", EmpID);
+							String updateSql = "UPDATE employees SET Fname = ? WHERE empid = ?";
+							String selectSql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN FROM employees WHERE empid = ?";
+							
 							System.out.printf("\nNEW DATA ENTRY FOR EMPLOYEE %d:", EmpID);
 							System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
 						
-							myStmt.execute(sqlcommand1); // using execute instead of executeQuery because I just want it to do the command, NOT return anything
-							// As shown here: https://stackoverflow.com/questions/48690990/how-to-execute-a-sql-statement-in-java-with-variables
-							
-							ResultSet myRS = myStmt.executeQuery(sqlcommand2);
-							while (myRS.next()) {
-								output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-								System.out.print(output.toString());
-								System.out.printf("------------------------------------------------------------------------------%n");
-								output.setLength(0);
+							try {
+								ResultSet myRS = DatabaseManager.executeUpdateAndFetch(
+									updateSql, selectSql,
+									new Object[]{FnameData, EmpID},
+									new Object[]{EmpID}
+								);
+								
+								if (myRS.next()) {
+									output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+									System.out.print(output.toString());
+									System.out.printf(tableDecorator);
+									output.setLength(0);
+								} else {
+									System.out.println(ANSI.RED + "Employee not found!" + ANSI.RESET);
+								}
+							} catch (SQLException e) {
+								System.err.println(ANSI.RED + "Update failed: " + e.getMessage() + ANSI.RESET);
 							}
 						}
 
@@ -438,21 +524,29 @@ public class App {
 							System.out.println("\nENTER NEW VALUE - LAST NAME:");
 							String LnameData = scn.nextLine();
 							
-							String sqlcommand1 = String.format("UPDATE employees " + "SET Lname = '%s'" + " WHERE empid = %d", LnameData, EmpID);
-							String sqlcommand2 = String.format("SELECT Fname, Lname, email, empid, DOB, Salary, SSN " + " FROM employees" + " WHERE empid = %d", EmpID);
-							System.out.printf("\nNEW DATA ENTRY FOR EMPLOYEE %d:", EmpID);
+							String updateSql = "UPDATE employees SET Lname = ? WHERE empid = ?";
+							String selectSql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN FROM employees WHERE empid = ?";
 							
+							System.out.printf("\nNEW DATA ENTRY FOR EMPLOYEE %d:", EmpID);
 							System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
 							
-							myStmt.execute(sqlcommand1); // using execute instead of executeQuery because we just want it to do the command, NOT return anything
-							// As shown here: https://stackoverflow.com/questions/48690990/how-to-execute-a-sql-statement-in-java-with-variables
-							
-							ResultSet myRS = myStmt.executeQuery(sqlcommand2);
-							while (myRS.next()) {
-								output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
-								System.out.print(output.toString());
-								System.out.printf(tableDecorator);
-								output.setLength(0);
+							try {
+								ResultSet myRS = DatabaseManager.executeUpdateAndFetch(
+									updateSql, selectSql,
+									new Object[]{LnameData, EmpID},
+									new Object[]{EmpID}
+								);
+								
+								if (myRS.next()) {
+									output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+									System.out.print(output.toString());
+									System.out.printf(tableDecorator);
+									output.setLength(0);
+								} else {
+									System.out.println(ANSI.RED + "Employee not found!" + ANSI.RESET);
+								}
+							} catch (SQLException e) {
+								System.err.println(ANSI.RED + "Update failed: " + e.getMessage() + ANSI.RESET);
 							}
 						}
 
@@ -460,6 +554,8 @@ public class App {
 					}									
 				}
 			}
+		} catch (Exception e) {
+			System.err.println(ANSI.RED + "An error occurred: " + e.getMessage() + ANSI.RESET);
 		}
 	}
 }
