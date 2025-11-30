@@ -1,7 +1,6 @@
 package edenpackage;
 // paqazackage src;
 import java.sql.*;
-
 import java.util.Scanner;
 
 // import edenpackage.ANSI;
@@ -461,6 +460,74 @@ public class App {
 				}
 			}
 		}
+	}
+
+//should be separte file
+public static void updateSalary(){
+	Scanner scn = new Scanner(System.in);
+
+    System.out.println(ANSI.GREEN + "\nUPDATE EMPLOYEE SALARY" + ANSI.RESET);
+    System.out.println(queryDecorator);
+    
+    // Get Inputs 
+    System.out.println("ENTER EMPID:");
+    int empId = scn.nextInt();
+    
+    System.out.println("ENTER PERCENTAGE INCREASE (e.g., enter 5 for 5%):");
+    double percentage = scn.nextDouble();
+
+    // Calculate factor --> i think this is correct salary formula, is there constraint???
+    double increaseFactor = 1.0 + (percentage / 100.0);
+
+    StringBuilder output = new StringBuilder("");
+
+    // Connect 
+    try (Connection myConn = DriverManager.getConnection(url, user, password)) {
+        
+        //  update the salary
+        String updateSql = "UPDATE employees SET Salary = Salary * ? WHERE empid = ?";
+        
+        // Using PreparedStatement for updating
+        try (PreparedStatement updateStmt = myConn.prepareStatement(updateSql)) {
+            updateStmt.setDouble(1, increaseFactor);
+            updateStmt.setInt(2, empId);
+            
+            int rowsAffected = updateStmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println(ANSI.CYAN + "\nSUCCESS: Salary updated." + ANSI.RESET);
+                
+                //  Confirm success
+                String selectSql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN FROM employees WHERE empid = ?";
+                try (PreparedStatement selectStmt = myConn.prepareStatement(selectSql)) {
+                    selectStmt.setInt(1, empId);
+                    ResultSet myRS = selectStmt.executeQuery();
+                    
+                    System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
+                    
+                    while (myRS.next()) {
+                        output.append(String.format(leftAlignFormat, 
+                            myRS.getInt("EmpID"), 
+                            myRS.getString("Fname"),  
+                            myRS.getString("Lname"),  
+                            myRS.getString("email"), 
+                            myRS.getString("DOB"), 
+                            myRS.getBigDecimal("Salary"), 
+                            myRS.getString("SSN")
+                        ));
+                        System.out.print(output.toString());
+                        System.out.format(tableDecorator);
+                    }
+                }
+            } else {
+                System.out.println(ANSI.RED + "\nFAILURE: Employee ID not found." + ANSI.RESET);
+            }
+        }
+    } catch (Exception e) {
+        System.out.println(ANSI.RED + "ERROR: " + e.getMessage() + ANSI.RESET);
+    }
+
+
 	}
 }
 
