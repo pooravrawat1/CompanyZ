@@ -195,6 +195,7 @@ public class App {
 					}
 				}
 				adminChoice();
+				return;
 			}
 			
 		} catch (Exception e) {
@@ -346,7 +347,7 @@ public class App {
 		}
 		
 		try {
-			System.out.println(ANSI.GREEN + "\nEDIT OPTIONS\n" + ANSI.RESET + queryDecorator + "\n+ Name\n+ DOB\n+ SSN\n+ EmpID\n\nENTER COMMAND: ");		
+			System.out.println(ANSI.GREEN + "\nEDIT OPTIONS\n" + ANSI.RESET + queryDecorator + "\n+ Name\n+ DOB\n+ SSN\n+ Email\n+ Salary\n\nENTER COMMAND: ");		
 			scn = new Scanner(System.in);
 			String editChoice = scn.nextLine();
 
@@ -411,21 +412,167 @@ public class App {
 								} else {
 									System.out.println(ANSI.RED + "Employee not found!" + ANSI.RESET);
 								}
+						} catch (SQLException e) {
+							System.err.println(ANSI.RED + "Update failed: " + e.getMessage() + ANSI.RESET);
+						}
+
+						case "BOTH" -> {
+							System.out.println("\nENTER NEW VALUE - FIRST NAME:");
+							String FnameData = scn.nextLine();
+							System.out.println("\nENTER NEW VALUE - LAST NAME:");
+							String LnameData = scn.nextLine();
+							
+							String updateSql = "UPDATE employees SET Fname = ?, Lname = ? WHERE empid = ?";
+							String selectSql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN FROM employees WHERE empid = ?";
+							
+							System.out.printf("\nNEW DATA ENTRY FOR EMPLOYEE %d:", EmpID);
+							System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
+							
+							try {
+									myRS = DatabaseManager.executeUpdateAndFetch(
+									updateSql, selectSql,
+									new Object[]{FnameData, LnameData, EmpID},
+									new Object[]{EmpID}
+								);
+								
+								if (myRS.next()) {
+									output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+									System.out.print(output.toString());
+									System.out.printf(tableDecorator);
+									output.setLength(0);
+								} else {
+									System.out.println(ANSI.RED + "Employee not found!" + ANSI.RESET);
+								}
 							} catch (SQLException e) {
 								System.err.println(ANSI.RED + "Update failed: " + e.getMessage() + ANSI.RESET);
 							}
-
-						// @Poorav add the editing methods for:
-						// + both first and last name
-						// + dob
-						// + ssn
-						// + email? -- you'll have to add a new switch case
-
-						// @Alaya add the editing methods for:
-						// + salary
 						}
 					}
-					adminChoice();									
+					adminChoice();
+				}
+				
+				case "DOB" -> {
+					System.out.println("\nENTER NEW VALUE - DOB (YYYY-MM-DD):");
+					String DOBData = scn.nextLine();
+					
+					String updateSql = "UPDATE employees SET DOB = ? WHERE empid = ?";
+					String selectSql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN FROM employees WHERE empid = ?";
+					
+					System.out.printf("\nNEW DATA ENTRY FOR EMPLOYEE %d:", EmpID);
+					System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
+					
+					try {
+							myRS = DatabaseManager.executeUpdateAndFetch(
+							updateSql, selectSql,
+							new Object[]{DOBData, EmpID},
+							new Object[]{EmpID}
+						);
+						
+						if (myRS.next()) {
+							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+							System.out.print(output.toString());
+							System.out.printf(tableDecorator);
+							output.setLength(0);
+						} else {
+							System.out.println(ANSI.RED + "Employee not found!" + ANSI.RESET);
+						}
+					} catch (SQLException e) {
+						System.err.println(ANSI.RED + "Update failed: " + e.getMessage() + ANSI.RESET);
+					}
+					adminChoice();
+				}
+				
+				case "SSN" -> {
+					System.out.println("\nENTER NEW VALUE - SSN (XXX-XX-XXXX):");
+					String SSNData = scn.nextLine();
+					
+					String updateSql = "UPDATE employees SET SSN = ? WHERE empid = ?";
+					String selectSql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN FROM employees WHERE empid = ?";
+					
+					System.out.printf("\nNEW DATA ENTRY FOR EMPLOYEE %d:", EmpID);
+					System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
+					
+					try {
+							myRS = DatabaseManager.executeUpdateAndFetch(
+							updateSql, selectSql,
+							new Object[]{SSNData, EmpID},
+							new Object[]{EmpID}
+						);
+						
+						if (myRS.next()) {
+							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+							System.out.print(output.toString());
+							System.out.printf(tableDecorator);
+							output.setLength(0);
+						} else {
+							System.out.println(ANSI.RED + "Employee not found!" + ANSI.RESET);
+						}
+					} catch (SQLException e) {
+						System.err.println(ANSI.RED + "Update failed: " + e.getMessage() + ANSI.RESET);
+					}
+					adminChoice();
+				}
+				
+				case "EMAIL" -> {
+					System.out.println("\nENTER NEW VALUE - EMAIL:");
+					String emailData = scn.nextLine();
+					
+					String updateSql = "UPDATE employees SET email = ? WHERE empid = ?";
+					String selectSql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN FROM employees WHERE empid = ?";
+					
+					System.out.printf("\nNEW DATA ENTRY FOR EMPLOYEE %d:", EmpID);
+					System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
+					
+					try {
+							myRS = DatabaseManager.executeUpdateAndFetch(
+							updateSql, selectSql,
+							new Object[]{emailData, EmpID},
+							new Object[]{EmpID}
+						);
+						
+						if (myRS.next()) {
+							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+							System.out.print(output.toString());
+							System.out.printf(tableDecorator);
+							output.setLength(0);
+						} else {
+							System.out.println(ANSI.RED + "Employee not found!" + ANSI.RESET);
+						}
+					} catch (SQLException e) {
+						System.err.println(ANSI.RED + "Update failed: " + e.getMessage() + ANSI.RESET);
+					}
+					adminChoice();
+				}
+				
+				case "SALARY" -> {
+					System.out.println("\nENTER NEW VALUE - SALARY:");
+					String salaryData = scn.nextLine();
+					
+					String updateSql = "UPDATE employees SET Salary = ? WHERE empid = ?";
+					String selectSql = "SELECT Fname, Lname, email, empid, DOB, Salary, SSN FROM employees WHERE empid = ?";
+					
+					System.out.printf("\nNEW DATA ENTRY FOR EMPLOYEE %d:", EmpID);
+					System.out.format("\n" + ANSI.GREEN + tableDecorator + "\n" + tableHeader + "\n" + tableDecorator + ANSI.RESET);
+					
+					try {
+							myRS = DatabaseManager.executeUpdateAndFetch(
+							updateSql, selectSql,
+							new Object[]{salaryData, EmpID},
+							new Object[]{EmpID}
+						);
+						
+						if (myRS.next()) {
+							output.append(String.format(leftAlignFormat, myRS.getInt("EmpID"), myRS.getString("Fname"),  myRS.getString("Lname"),  myRS.getString("email"), myRS.getString("DOB"), myRS.getBigDecimal("Salary"), myRS.getString("SSN")));
+							System.out.print(output.toString());
+							System.out.printf(tableDecorator);
+							output.setLength(0);
+						} else {
+							System.out.println(ANSI.RED + "Employee not found!" + ANSI.RESET);
+						}
+					} catch (SQLException e) {
+						System.err.println(ANSI.RED + "Update failed: " + e.getMessage() + ANSI.RESET);
+					}
+					adminChoice();
 				}
 			}
 		} catch (Exception e) {
