@@ -1,9 +1,7 @@
 package main;
-// paqazackage src;
+
 import java.sql.*;
 import java.util.Scanner;
-
-// import edenpackage.ANSI;
 
 
 

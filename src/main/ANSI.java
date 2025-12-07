@@ -1,4 +1,4 @@
-package edenpackage;
+package main;
 public class ANSI {
 
     // Regular text colors
