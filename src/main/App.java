@@ -544,6 +544,7 @@ public class App {
 				}
 
 				// need to edit it so that it makes sure there are enough chars
+				// alaya needs to add percentage increase
 				case "SALARY" -> {
 					System.out.println("\nENTER NEW VALUE - SALARY:");
 					String salaryData = scn.nextLine();
