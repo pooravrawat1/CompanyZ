@@ -2,6 +2,7 @@
     "java.project.referencedLibraries": [
         "lib/**/*.jar",
         "src/lib/mysql-connector-j-9.1.0.jar"
+<<<<<<< HEAD
     ],
     "sqltools.connections": [
         {
@@ -19,5 +20,7 @@
             "username": "user",
             "askForPassword": true
         }
+=======
+>>>>>>> 79e0f3b (integrating poorav's changes - eden)
     ]
 }
