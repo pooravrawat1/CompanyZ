@@ -27,8 +27,9 @@ public final class TablePrinter {
                     emp.getDob(),
                     emp.getCurrentSalary(),
                     emp.getSsn());
+            System.out.format(TABLE_DECORATOR);
         }
 
-        System.out.format(ANSI.GREEN + TABLE_DECORATOR + ANSI.RESET);
+        // System.out.format(ANSI.GREEN + TABLE_DECORATOR + ANSI.RESET);
     }
 }

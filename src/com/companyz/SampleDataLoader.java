@@ -11,9 +11,12 @@ public class SampleDataLoader {
     public static List<Employee> getEmployees() {
         List<Employee> employees = new ArrayList<>();
         employees.add(buildEmployee(1, "Jane", "Smith", "111223333", LocalDate.of(1985, 3, 15),
-                LocalDate.of(2015, 6, 1), 95000.0, "jane.smith@companyz.com", "ADMIN", "password123"));
+                LocalDate.of(2015, 6, 1), 95000.0, "jane.smith@companyzAdmin.com", "ADMIN", "adminPass123"));
         employees.add(buildEmployee(2, "John", "Doe", "222334444", LocalDate.of(1990, 7, 22),
                 LocalDate.of(2018, 1, 15), 85000.0, "john.doe@companyz.com", "EMPLOYEE", "password123"));
+        employees.add(buildEmployee(3, "Johnny", "Doewn", "222334444", LocalDate.of(1990, 7, 22),
+                LocalDate.of(2018, 1, 15), 85000.0, "john.doe@companyz.com", "EMPLOYEE", "password121"));
+                
         return employees;
     }
 
