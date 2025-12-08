@@ -1,4 +1,5 @@
-package main;
+package com.companyz;
+
 public class ANSI {
 
     // Regular text colors
