@@ -17,7 +17,7 @@ public class App {
 	private static final List<Employee> employees = SampleDataLoader.getEmployees();
 	private static final EmployeeService employeeService = new EmployeeService(employees);
 	private static final AuthService authService = new AuthService(employees);
-	private static final PayrollService payrollService = new PayrollService(SampleDataLoader.getPayrolls());
+	private static final PayrollService payrollService = new PayrollService(SampleDataLoader.getPayrolls(), employees);
 	public static int empId;
 
 	public static void main(String[] args) {
@@ -34,7 +34,6 @@ public class App {
 				empId = Integer.parseInt(scanner.nextLine());
 			} catch (NumberFormatException e) {
 				System.out.println(ANSI.RED + "Please enter an ID in the form of an integer. \n" + ANSI.RESET);
-		
 				App.main(args);
 			}
 
@@ -82,7 +81,7 @@ public class App {
 						TablePrinter.printEmployeeTable(employeeService.getAllEmployees());
 						break;
 					case "2":
-						searchEmployees(scanner);
+						searchEmployees(scanner, true);
 						break;
 					case "3":
 						updateEmployeeData(scanner);
@@ -110,7 +109,7 @@ public class App {
 		}
 	}
 
-	private static void searchEmployees(Scanner scanner) {
+	private static void searchEmployees(Scanner scanner, boolean isAdmin) {
 		System.out.println("\n" + ANSI.CYAN + "=== SEARCH OPTIONS ===" + ANSI.RESET);
 		System.out.println("1) Employee ID");
 		System.out.println("2) First Name");
@@ -167,9 +166,72 @@ public class App {
 			}
 			if (results != null && !results.isEmpty()) {
 				TablePrinter.printEmployeeTable(results);
+
+				if (isAdmin) {
+					System.out.println("\n" + ANSI.CYAN + "=== UPDATE QUERY ===" + ANSI.RESET);
+					System.out.print("Would you like to update employee data? (y/n): ");
+
+					String updateChoice = scanner.nextLine().trim().toLowerCase();
+
+					if (updateChoice.startsWith("y")) {
+						if (results.size() == 1) {
+                            // most likely case
+							updateEmployeeFromSearch(scanner, results.get(0));
+						} else {
+							System.out.print("\nEnter the Employee ID to update: ");
+							try {
+								int empId = Integer.parseInt(scanner.nextLine());
+								Employee selectedEmp = employeeService.getById(empId);
+
+								boolean inResults = results.stream().anyMatch(e -> e.getEmpId() == empId);
+
+								if (selectedEmp != null && inResults) {
+									updateEmployeeFromSearch(scanner, selectedEmp);
+								} else {
+									System.out.println(ANSI.RED + "Employee ID not found in results." + ANSI.RESET);
+								}
+                                
+							} catch (NumberFormatException e) {
+								System.out.println(ANSI.RED + "Invalid Employee ID." + ANSI.RESET);
+							}
+						}
+					}
+				}
 			} else {
 				System.out.println(ANSI.RED + "No employees found." + ANSI.RESET);
 			}
+		} catch (Exception e) {
+			System.out.println(ANSI.RED + "Error: " + e.getMessage() + ANSI.RESET);
+		}
+	}
+
+	private static void updateEmployeeFromSearch(Scanner scanner, Employee emp) {
+		try {
+			System.out.println("\nCurrent data:");
+			TablePrinter.printEmployeeTable(List.of(emp));
+
+			System.out.println("\nLeave blank to keep current value.");
+			System.out.print("First Name [" + emp.getFirstName() + "]: ");
+			String first = scanner.nextLine();
+			if (!first.isBlank()) {
+				emp.setFirstName(first);
+			}
+
+			System.out.print("Last Name [" + emp.getLastName() + "]: ");
+			String last = scanner.nextLine();
+			if (!last.isBlank()) {
+				emp.setLastName(last);
+			}
+
+			System.out.print("Salary [" + emp.getCurrentSalary() + "]: ");
+			String sal = scanner.nextLine();
+			if (!sal.isBlank()) {
+				double salaryVal = Double.parseDouble(sal);
+				emp.setCurrentSalary(salaryVal);
+			}
+
+			employeeService.updateEmployee(emp);
+			System.out.println(ANSI.GREEN + "Employee updated successfully." + ANSI.RESET);
 		} catch (Exception e) {
 			System.out.println(ANSI.RED + "Error: " + e.getMessage() + ANSI.RESET);
 		}
@@ -228,9 +290,9 @@ public class App {
 		try {
 			System.out.print("Enter percentage increase (e.g., 5 for 5%): ");
 			double percent = Double.parseDouble(scanner.nextLine());
-			System.out.print("Enter minimum salary (inclusive): ");
+			System.out.print("Enter minimum salary: ");
 			double min = Double.parseDouble(scanner.nextLine());
-			System.out.print("Enter maximum salary (inclusive): ");
+			System.out.print("Enter maximum salary: ");
 			double max = Double.parseDouble(scanner.nextLine());
 
 			employeeService.bulkSalaryIncrease(percent, min, max);
@@ -258,7 +320,7 @@ public class App {
 						TablePrinter.printEmployeeTable(List.of(employee));
 						break;
 					case "2":
-						searchEmployees(scanner);
+						searchEmployees(scanner, false);
 						break;
 					case "3":
 						showPayHistory(employee.getEmpId());

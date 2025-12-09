@@ -63,6 +63,8 @@ public class EmployeeService {
             existing.setHireDate(updated.getHireDate());
             existing.setCurrentSalary(updated.getCurrentSalary());
             existing.setEmail(updated.getEmail());
+            existing.setJobTitle(updated.getJobTitle());
+            existing.setDivision(updated.getDivision());
             existing.setRole(updated.getRole());
         }
     }

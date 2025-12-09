@@ -11,13 +11,16 @@ public class Employee {
     private LocalDate hireDate;
     private double currentSalary;
     private String email;
+    private String jobTitle;
+    private String division;
     private String passwordHash;
     private String role; // admin or employee
     
     public Employee() {}
     
     public Employee(int empId, String firstName, String lastName, String ssn, LocalDate dob, 
-                    LocalDate hireDate, double currentSalary, String email, String role) {
+                    LocalDate hireDate, double currentSalary, String email, String jobTitle,
+                    String division, String role) {
         this.empId = empId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -26,6 +29,8 @@ public class Employee {
         this.hireDate = hireDate;
         this.currentSalary = currentSalary;
         this.email = email;
+        this.jobTitle = jobTitle;
+        this.division = division;
         this.role = role;
     }
     
@@ -53,6 +58,12 @@ public class Employee {
     
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getJobTitle() { return jobTitle; }
+    public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
+
+    public String getDivision() { return division; }
+    public void setDivision(String division) { this.division = division; }
     
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
@@ -62,7 +73,7 @@ public class Employee {
     
     @Override
     public String toString() {
-        return String.format("Employee[%d, %s %s, %s, Salary: %s, Role: %s]", 
-                empId, firstName, lastName, email, currentSalary, role);
+        return String.format("Employee[%d, %s %s, %s, Salary: %s, Title: %s, Division: %s, Role: %s]", 
+            empId, firstName, lastName, email, currentSalary, jobTitle, division, role);
     }
 }

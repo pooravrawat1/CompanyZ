@@ -2,15 +2,20 @@ package com.companyz.services;
 
 import com.companyz.models.Payroll;
 import com.companyz.models.PayrollSummary;
+import com.companyz.models.Employee;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class PayrollService {
     private final List<Payroll> payrolls;
+    private final List<Employee> employees;
 
-    public PayrollService(List<Payroll> payrolls) {
+    public PayrollService(List<Payroll> payrolls, List<Employee> employees) {
         this.payrolls = payrolls;
+        this.employees = employees;
     }
     
     public List<Payroll> getPayHistory(int empId) {
@@ -32,10 +37,41 @@ public class PayrollService {
     }
 
     public List<PayrollSummary> getTotalPayByJobTitle(int year, int month) {
-        return List.of();
+        Map<String, Double> totals = new HashMap<>();
+
+        payrolls.stream()
+                .filter(p -> p.getPayDate().getYear() == year && p.getPayDate().getMonthValue() == month)
+                .forEach(p -> {
+                    Employee emp = findEmployee(p.getEmpId());
+                    String key = emp != null ? emp.getJobTitle() : "Unknown";
+                    totals.put(key, totals.getOrDefault(key, 0.0) + p.getGross());
+                });
+
+        return totals.entrySet().stream()
+                .map(e -> new PayrollSummary(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
     }
 
     public List<PayrollSummary> getTotalPayByDivision(int year, int month) {
-        return List.of();
+        Map<String, Double> totals = new HashMap<>();
+
+        payrolls.stream()
+                .filter(p -> p.getPayDate().getYear() == year && p.getPayDate().getMonthValue() == month)
+                .forEach(p -> {
+                    Employee emp = findEmployee(p.getEmpId());
+                    String key = emp != null ? emp.getDivision() : "Unknown";
+                    totals.put(key, totals.getOrDefault(key, 0.0) + p.getGross());
+                });
+
+        return totals.entrySet().stream()
+                .map(e -> new PayrollSummary(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    private Employee findEmployee(int empId) {
+        return employees.stream()
+                .filter(e -> e.getEmpId() == empId)
+                .findFirst()
+                .orElse(null);
     }
 }

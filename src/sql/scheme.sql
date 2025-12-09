@@ -1,7 +1,3 @@
-<<<<<<< HEAD
--- Active: 1765156606808@@127.0.0.1@3306@employeedata2
-=======
->>>>>>> 68f9b5d (:))))
 -- CREATE DATABASE
 DROP DATABASE IF EXISTS employeeData;
 CREATE DATABASE employeeData;
