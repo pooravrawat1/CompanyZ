@@ -71,7 +71,8 @@ public class App {
 				System.out.println("5) Total pay by Job Title (monthly)");
 				System.out.println("6) Total pay by Division (monthly)");
 				System.out.println("7) Employees hired in date range");
-				System.out.println("8) Logout");
+				System.out.println("8) Create new employee");
+				System.out.println("9) Logout");
 				System.out.println("\n" + ANSI.CYAN + "----------------------" + ANSI.RESET);
 				System.out.print("ENTER COMMAND: ");
 				String choice = scanner.nextLine();
@@ -98,7 +99,9 @@ public class App {
 					case "7":
 						showEmployeesHiredInRange(scanner);
 						break;
-					case "8":
+					case "8": 
+						createEmployee(scanner);
+					case "9":
 						running = false;
 						System.out.println("Thank you for using the terminal.");
 						break;
@@ -236,6 +239,90 @@ public class App {
 			System.out.println(ANSI.RED + "Error: " + e.getMessage() + ANSI.RESET);
 		}
 	}
+
+	private static void createEmployee(Scanner scanner) {
+		Employee emp = new Employee();
+		try {
+			System.out.println("\nENTER THE EMPLOYEE'S...");
+			
+			System.out.print("\nEmployee ID: ");
+			String empidStr = scanner.nextLine();
+			if (!empidStr.isBlank()) {
+				int empId = Integer.parseInt(empidStr);
+				emp.setEmpId(empId);
+			} 
+			
+			System.out.print("\nFirst Name: ");
+			String first = scanner.nextLine();
+			if (!first.isBlank()) {
+				emp.setFirstName(first);
+			}
+
+			System.out.print("\nLast Name: ");
+			String last = scanner.nextLine();
+			if (!last.isBlank()) {
+				emp.setLastName(last);
+			}
+
+			System.out.print("\nSSN: ");
+			String ssn = scanner.nextLine();
+			if (!ssn.isBlank()) {
+				emp.setSsn(ssn);
+			}
+
+			System.out.print("\nSalary: ");
+			String sal = scanner.nextLine();
+			if (!sal.isBlank()) {
+				double salaryVal = Double.parseDouble(sal);
+				emp.setCurrentSalary(salaryVal);
+			}
+
+			System.out.print("\nDOB (YYYY-MM-DD): ");
+			String dobStr = scanner.nextLine();
+			if (!dobStr.isBlank()) {
+				emp.setDob(java.time.LocalDate.parse(dobStr));
+			}
+
+			System.out.print("\nHire date (YYYY-MM-DD): ");
+			String hireDateStr = scanner.nextLine();
+			if (!hireDateStr.isBlank()) {
+				emp.setHireDate(java.time.LocalDate.parse(hireDateStr));
+			}
+
+			System.out.print("\nEmail: ");
+			String email = scanner.nextLine();
+			if (!email.isBlank()) {
+				emp.setEmail(email);
+			}
+
+			System.out.print("\nDivision: ");
+			String division = scanner.nextLine();
+			if (!division.isBlank()) {
+				emp.setDivision(division);
+			}
+
+			System.out.print("\nPassword: ");
+			String password = scanner.nextLine();
+			if (!password.isBlank()) {
+				emp.setPasswordHash(password);
+			}
+
+			System.out.print("\nJob Title: ");
+			String title = scanner.nextLine();
+			if (!title.isBlank()) {
+				emp.setRole(title);
+			}
+
+			employeeService.insertEmployee(emp);
+			// employees.add(Employee.buildEmployee());
+
+			System.out.println(ANSI.GREEN + "Employee created successfully." + ANSI.RESET);
+
+		} catch (Exception e) {
+			System.out.println(ANSI.RED + "Error: " + e.getMessage() + ANSI.RESET);
+		}
+	}
+
 
 	private static void updateEmployeeData(Scanner scanner) { // @eden add error handling for incorrect input types
 		System.out.print("Enter Employee ID to update: ");
