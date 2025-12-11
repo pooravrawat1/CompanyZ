@@ -75,7 +75,7 @@ public class EmployeeService {
         String sql = "INSERT INTO employees (empid, first_name, last_name, ssn, dob, hire_date, current_salary, email, password_hash, role) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
-        DatabaseManager.executeQuery(sql, new Object[]{
+        DatabaseManager.executeUpdate(sql, new Object[]{
             emp.getEmpId(), 
             emp.getFirstName(), 
             emp.getLastName(), 
@@ -87,6 +87,7 @@ public class EmployeeService {
             emp.getPasswordHash(), 
             emp.getRole()
         });
+        System.out.println("Employee created successfully.");
     }
 
     public void updateSalaryByPercentage(int empId, double percent) {
