@@ -73,6 +73,9 @@ public class EmployeeService {
     }
 
     public void updateEmployee(Employee updated) {
+        if (updated == null) {
+            throw new IllegalArgumentException("Employee cannot be null");
+        }
         Employee existing = getById(updated.getEmpId());
         if (existing != null) {
             existing.setFirstName(updated.getFirstName());
@@ -89,6 +92,13 @@ public class EmployeeService {
     }
 
     public void insertEmployee(Employee emp) {
+        if (emp == null) {
+            throw new IllegalArgumentException("Employee cannot be null");
+        }
+        if (emp.getDob() == null || emp.getHireDate() == null) {
+            throw new IllegalArgumentException("Employee date of birth and hire date cannot be null");
+        }
+        
         String sql = "INSERT INTO employees (empid, first_name, last_name, ssn, dob, hire_date, current_salary, email, password_hash, role) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
