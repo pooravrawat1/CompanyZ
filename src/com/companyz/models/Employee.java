@@ -15,12 +15,13 @@ public class Employee {
     private String division;
     private String passwordHash;
     private String role; // admin or employee
+    private int jobTitleID;
     
     public Employee() {}
     
     public Employee(int empId, String firstName, String lastName, String ssn, LocalDate dob, 
                     LocalDate hireDate, double currentSalary, String email, String jobTitle,
-                    String division, String role) {
+                    String division, String role, int jobTitleID) {
         this.empId = empId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -32,6 +33,7 @@ public class Employee {
         this.jobTitle = jobTitle;
         this.division = division;
         this.role = role;
+        this.jobTitleID = jobTitleID;
     }
     
     // Getters and Setters
@@ -61,6 +63,9 @@ public class Employee {
 
     public String getJobTitle() { return jobTitle; }
     public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
+
+    public String getJobTitleID() { return jobTitle; }
+    public void setJobTitleIDID(int jobTitleID) { this.jobTitleID = jobTitleID; }
 
     public String getDivision() { return division; }
     public void setDivision(String division) { this.division = division; }

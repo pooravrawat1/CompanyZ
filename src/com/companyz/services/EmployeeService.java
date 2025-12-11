@@ -1,6 +1,9 @@
+// -- Active: 1765161594597@@127.0.0.1@3306@employeedata
 package com.companyz.services;
 
+import com.companyz.DatabaseManager;
 import com.companyz.models.Employee;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,6 +70,26 @@ public class EmployeeService {
             existing.setDivision(updated.getDivision());
             existing.setRole(updated.getRole());
         }
+    }
+
+    public void insertEmployee(Employee emp) {
+        String sql = "INSERT INTO employees (empid, first_name, last_name, ssn, dob, hire_date, current_salary, email, password_hash, role) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+        DatabaseManager.executeUpdate(sql, new Object[]{
+            emp.getEmpId(), 
+            emp.getFirstName(), 
+            emp.getLastName(), 
+            emp.getSsn(), 
+            Date.valueOf(emp.getDob()), 
+            Date.valueOf(emp.getHireDate()), 
+            emp.getCurrentSalary(), 
+            emp.getEmail(), 
+            emp.getPasswordHash(), 
+            "EMPLOYEE"
+        });
+        
+        employees.add(emp);
     }
 
     public void updateSalaryByPercentage(int empId, double percent) {
