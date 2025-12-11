@@ -1,3 +1,4 @@
+// -- Active: 1765161594597@@127.0.0.1@3306@employeedata
 package com.companyz.services;
 
 import com.companyz.DatabaseManager;
@@ -85,9 +86,10 @@ public class EmployeeService {
             emp.getCurrentSalary(), 
             emp.getEmail(), 
             emp.getPasswordHash(), 
-            emp.getRole()
+            "EMPLOYEE"
         });
-        System.out.println("Employee created successfully.");
+        
+        employees.add(emp);
     }
 
     public void updateSalaryByPercentage(int empId, double percent) {

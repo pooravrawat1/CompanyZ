@@ -35,7 +35,7 @@ public class SampleDataLoader {
     private static Employee buildEmployee(int id, String first, String last, String ssn, LocalDate dob,
                                           LocalDate hireDate, double salary, String email,
                                           String jobTitle, String division, String role, String password) {
-        Employee e = new Employee(id, first, last, ssn, dob, hireDate, salary, email, jobTitle, division, role);
+        Employee e = new Employee(id, first, last, ssn, dob, hireDate, salary, email, jobTitle, division, role, 0);
         e.setPasswordHash(password);
         return e;
     }

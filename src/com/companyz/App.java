@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Scanner;
 
 public class App {
-
 	private static final List<Employee> employees = SampleDataLoader.getEmployees();
 	private static final EmployeeService employeeService = new EmployeeService(employees);
 	private static final AuthService authService = new AuthService(employees);
@@ -28,8 +27,6 @@ public class App {
 			
 			// Read employee id
 			System.out.print("Enter your ID: ");
-			// int empId = Integer.parseInt(scanner.nextLine());
-			// implement error handling for entering a non integer ------------------------------------------------------------
 			try{
 				empId = Integer.parseInt(scanner.nextLine());
 			} catch (NumberFormatException e) {
@@ -101,6 +98,7 @@ public class App {
 						break;
 					case "8": 
 						createEmployee(scanner);
+						break;
 					case "9":
 						running = false;
 						System.out.println("Thank you for using the terminal.");
@@ -193,7 +191,7 @@ public class App {
 								} else {
 									System.out.println(ANSI.RED + "Employee ID not found in results." + ANSI.RESET);
 								}
-                                
+
 							} catch (NumberFormatException e) {
 								System.out.println(ANSI.RED + "Invalid Employee ID." + ANSI.RESET);
 							}
@@ -270,6 +268,12 @@ public class App {
 				emp.setSsn(ssn);
 			}
 
+			System.out.print("\nHire date (YYYY-MM-DD): ");
+			String hireDateStr = scanner.nextLine();
+			if (!hireDateStr.isBlank()) {
+				emp.setHireDate(java.time.LocalDate.parse(hireDateStr));
+			}
+
 			System.out.print("\nSalary: ");
 			String sal = scanner.nextLine();
 			if (!sal.isBlank()) {
@@ -277,22 +281,23 @@ public class App {
 				emp.setCurrentSalary(salaryVal);
 			}
 
-			System.out.print("\nDOB (YYYY-MM-DD): ");
-			String dobStr = scanner.nextLine();
-			if (!dobStr.isBlank()) {
-				emp.setDob(java.time.LocalDate.parse(dobStr));
-			}
-
-			System.out.print("\nHire date (YYYY-MM-DD): ");
-			String hireDateStr = scanner.nextLine();
-			if (!hireDateStr.isBlank()) {
-				emp.setHireDate(java.time.LocalDate.parse(hireDateStr));
-			}
-
+			
 			System.out.print("\nEmail: ");
 			String email = scanner.nextLine();
 			if (!email.isBlank()) {
 				emp.setEmail(email);
+			}
+
+			System.out.print("\nPassword: ");
+			String password = scanner.nextLine();
+			if (!password.isBlank()) {
+				emp.setPasswordHash(password);
+			}	
+			
+			System.out.print("\nDOB (YYYY-MM-DD): ");
+			String dobStr = scanner.nextLine();
+			if (!dobStr.isBlank()) {
+				emp.setDob(java.time.LocalDate.parse(dobStr));
 			}
 
 			System.out.print("\nDivision: ");
@@ -301,16 +306,10 @@ public class App {
 				emp.setDivision(division);
 			}
 
-			System.out.print("\nPassword: ");
-			String password = scanner.nextLine();
-			if (!password.isBlank()) {
-				emp.setPasswordHash(password);
-			}
-
-			System.out.print("\nJob Title: ");
+			System.out.print("\nJob Title ID: ");
 			String title = scanner.nextLine();
 			if (!title.isBlank()) {
-				emp.setRole(title);
+				emp.setJobTitle(title);
 			}
 
 			employeeService.insertEmployee(emp);
