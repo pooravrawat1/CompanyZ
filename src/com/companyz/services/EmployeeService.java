@@ -87,6 +87,7 @@ public class EmployeeService {
             emp.getPasswordHash(), 
             emp.getRole()
         });
+        employees.add(emp);
         System.out.println("Employee created successfully.");
     }
 
