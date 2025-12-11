@@ -23,30 +23,46 @@ public class EmployeeService {
     }
 
     public List<Employee> searchByFirstName(String firstName) {
+        if (firstName == null) {
+            throw new IllegalArgumentException("First name cannot be null");
+        }
         return employees.stream()
-                .filter(e -> e.getFirstName().equalsIgnoreCase(firstName))
+                .filter(e -> e.getFirstName() != null && e.getFirstName().equalsIgnoreCase(firstName))
                 .collect(Collectors.toList());
     }
 
     public List<Employee> searchByLastName(String lastName) {
+        if (lastName == null) {
+            throw new IllegalArgumentException("Last name cannot be null");
+        }
         return employees.stream()
-                .filter(e -> e.getLastName().equalsIgnoreCase(lastName))
+                .filter(e -> e.getLastName() != null && e.getLastName().equalsIgnoreCase(lastName))
                 .collect(Collectors.toList());
     }
 
     public List<Employee> searchByFullName(String firstName, String lastName) {
+        if (firstName == null || lastName == null) {
+            throw new IllegalArgumentException("First name and last name cannot be null");
+        }
         return employees.stream()
+                .filter(e -> e.getFirstName() != null && e.getLastName() != null)
                 .filter(e -> e.getFirstName().equalsIgnoreCase(firstName) && e.getLastName().equalsIgnoreCase(lastName))
                 .collect(Collectors.toList());
     }
 
     public List<Employee> searchByDOB(LocalDate dob) {
+        if (dob == null) {
+            throw new IllegalArgumentException("Date of birth cannot be null");
+        }
         return employees.stream()
                 .filter(e -> dob.equals(e.getDob()))
                 .collect(Collectors.toList());
     }
 
     public List<Employee> searchBySSN(String ssn) {
+        if (ssn == null) {
+            throw new IllegalArgumentException("SSN cannot be null");
+        }
         return employees.stream()
                 .filter(e -> ssn.equals(e.getSsn()))
                 .collect(Collectors.toList());
@@ -108,6 +124,12 @@ public class EmployeeService {
     }
 
     public List<Employee> getEmployeesHiredInRange(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Start date and end date cannot be null");
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date cannot be after end date");
+        }
         return employees.stream()
             .filter(e -> e.getHireDate() != null)
             .filter(e -> !e.getHireDate().isBefore(startDate) && !e.getHireDate().isAfter(endDate))
