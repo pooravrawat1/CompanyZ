@@ -26,7 +26,14 @@ public class PayrollService {
     }
     
     public List<Payroll> getPayrollByDateRange(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Start date and end date cannot be null");
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date cannot be after end date");
+        }
         return payrolls.stream()
+                .filter(p -> p.getPayDate() != null)
                 .filter(p -> !p.getPayDate().isBefore(startDate) && !p.getPayDate().isAfter(endDate))
                 .sorted((a, b) -> a.getPayDate().compareTo(b.getPayDate()))
                 .collect(Collectors.toList());
@@ -37,9 +44,16 @@ public class PayrollService {
     }
 
     public List<PayrollSummary> getTotalPayByJobTitle(int year, int month) {
+        if (year < 1900 || year > 2100) {
+            throw new IllegalArgumentException("Year must be between 1900 and 2100");
+        }
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Month must be between 1 and 12");
+        }
         Map<String, Double> totals = new HashMap<>();
 
         payrolls.stream()
+                .filter(p -> p.getPayDate() != null)
                 .filter(p -> p.getPayDate().getYear() == year && p.getPayDate().getMonthValue() == month)
                 .forEach(p -> {
                     Employee emp = findEmployee(p.getEmpId());
@@ -53,9 +67,16 @@ public class PayrollService {
     }
 
     public List<PayrollSummary> getTotalPayByDivision(int year, int month) {
+        if (year < 1900 || year > 2100) {
+            throw new IllegalArgumentException("Year must be between 1900 and 2100");
+        }
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Month must be between 1 and 12");
+        }
         Map<String, Double> totals = new HashMap<>();
 
         payrolls.stream()
+                .filter(p -> p.getPayDate() != null)
                 .filter(p -> p.getPayDate().getYear() == year && p.getPayDate().getMonthValue() == month)
                 .forEach(p -> {
                     Employee emp = findEmployee(p.getEmpId());
