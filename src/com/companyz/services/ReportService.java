@@ -32,6 +32,11 @@ public class ReportService {
         ResultSet rs = DatabaseManager.executeQuery(sql, new Object[]{year, month});
         Map<String, BigDecimal> results = new HashMap<>();
         
+        if (rs == null) {
+            System.err.println("Failed to retrieve payroll data by job title");
+            return results;
+        }
+        
         while (rs.next()) {
             results.put(rs.getString("title_name"), rs.getBigDecimal("total_pay"));
         }
@@ -58,6 +63,11 @@ public class ReportService {
         ResultSet rs = DatabaseManager.executeQuery(sql, new Object[]{year, month});
         Map<String, BigDecimal> results = new HashMap<>();
         
+        if (rs == null) {
+            System.err.println("Failed to retrieve payroll data by division");
+            return results;
+        }
+        
         while (rs.next()) {
             results.put(rs.getString("division_name"), rs.getBigDecimal("total_pay"));
         }
@@ -80,6 +90,11 @@ public class ReportService {
         
         ResultSet rs = DatabaseManager.executeQuery(sql, new Object[]{Date.valueOf(startDate), Date.valueOf(endDate)});
         List<String> results = new ArrayList<>();
+        
+        if (rs == null) {
+            System.err.println("Failed to retrieve employee hire data");
+            return results;
+        }
         
         while (rs.next()) {
             String info = String.format("EmpID: %d | %s %s | Hired: %s | Email: %s",
