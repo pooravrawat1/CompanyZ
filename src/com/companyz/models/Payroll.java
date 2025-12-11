@@ -21,7 +21,6 @@ public class Payroll {
         this.tax = tax;
     }
     
-    // Getters and Setters
     public int getPayId() { return payId; }
     public void setPayId(int payId) { this.payId = payId; }
     

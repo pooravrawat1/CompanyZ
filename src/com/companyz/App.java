@@ -8,15 +8,21 @@ import com.companyz.services.EmployeeService;
 import com.companyz.services.PayrollService;
 import com.companyz.ui.AsciiArt;
 import com.companyz.ui.TablePrinter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class App {
-	private static final List<Employee> employees = SampleDataLoader.getEmployees();
+	private static final java.util.List<Employee> employees = new ArrayList<>(DatabaseDataLoader.getEmployees());
 	private static final EmployeeService employeeService = new EmployeeService(employees);
-	private static final AuthService authService = new AuthService(employees);
-	private static final PayrollService payrollService = new PayrollService(SampleDataLoader.getPayrolls(), employees);
+	private static final PayrollService payrollService = new PayrollService(DatabaseDataLoader.getPayrolls(), employees);
+	private static final AuthService authService = AuthService.getInstance();
 	public static int empId;
 
 	public static void main(String[] args) {
@@ -166,7 +172,8 @@ public class App {
 					break;
 			}
 			if (results != null && !results.isEmpty()) {
-				TablePrinter.printEmployeeTable(results);
+				employeeService.hydrateJobTitleAndDivision(results);
+				TablePrinter.printEmployeeTableWithJobDivision(results);
 
 				if (isAdmin) {
 					System.out.println("\n" + ANSI.CYAN + "=== UPDATE QUERY ===" + ANSI.RESET);
@@ -208,9 +215,6 @@ public class App {
 
 	private static void updateEmployeeFromSearch(Scanner scanner, Employee emp) {
 		try {
-			System.out.println("\nCurrent data:");
-			TablePrinter.printEmployeeTable(List.of(emp));
-
 			System.out.println("\nLeave blank to keep current value.");
 			System.out.print("First Name [" + emp.getFirstName() + "]: ");
 			String first = scanner.nextLine();
@@ -240,90 +244,131 @@ public class App {
 
 	private static void createEmployee(Scanner scanner) {
 		Employee emp = new Employee();
+		System.out.println(ANSI.KEWL + "=== ENTER NEW EMPLOYEE DATA ===" + ANSI.RESET);
+
+		Connection conn = null;
+		boolean previousAutoCommit = true;
 		try {
-			System.out.println("\nENTER THE EMPLOYEE'S...");
-			
-			System.out.print("\nEmployee ID: ");
-			String empidStr = scanner.nextLine();
-			if (!empidStr.isBlank()) {
-				int empId = Integer.parseInt(empidStr);
-				emp.setEmpId(empId);
-			} 
-			
 			System.out.print("\nFirst Name: ");
-			String first = scanner.nextLine();
-			if (!first.isBlank()) {
-				emp.setFirstName(first);
+			emp.setFirstName(scanner.nextLine().trim());
+
+			System.out.print("Last Name: ");
+			emp.setLastName(scanner.nextLine().trim());
+
+			System.out.print("SSN: ");
+			emp.setSsn(scanner.nextLine().trim());
+
+			System.out.print("DOB (YYYY-MM-DD): ");
+			emp.setDob(java.time.LocalDate.parse(scanner.nextLine().trim()));
+
+			System.out.print("Hire date (YYYY-MM-DD): ");
+			emp.setHireDate(java.time.LocalDate.parse(scanner.nextLine().trim()));
+
+			System.out.print("Salary: ");
+			emp.setCurrentSalary(Double.parseDouble(scanner.nextLine().trim()));
+
+			System.out.print("Email: ");
+			emp.setEmail(scanner.nextLine().trim());
+
+			System.out.print("Password: ");
+			emp.setPassword(scanner.nextLine());
+
+			System.out.print("Division: ");
+			emp.setDivision(scanner.nextLine().trim());
+
+			System.out.print("Job Title: ");
+			emp.setJobTitle(scanner.nextLine().trim());
+
+			String insertSql = "INSERT INTO employees (emp_id, first_name, last_name, ssn, dob, hire_date, salary, email, password, role) " +
+					"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+			conn = DatabaseManager.getConnection();
+			previousAutoCommit = conn.getAutoCommit();
+			conn.setAutoCommit(false);
+
+			int nextEmpId = getNextEmployeeId(conn);
+			emp.setEmpId(nextEmpId);
+
+			try (PreparedStatement ps = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+				ps.setInt(1, nextEmpId);
+				ps.setString(2, emp.getFirstName());
+				ps.setString(3, emp.getLastName());
+				ps.setString(4, emp.getSsn());
+				ps.setDate(5, java.sql.Date.valueOf(emp.getDob()));
+				ps.setDate(6, java.sql.Date.valueOf(emp.getHireDate()));
+				ps.setDouble(7, emp.getCurrentSalary());
+				ps.setString(8, emp.getEmail());
+				ps.setString(9, emp.getPassword());
+				ps.setString(10, "EMPLOYEE");
+				ps.executeUpdate();
+
+				try (ResultSet keys = ps.getGeneratedKeys()) {
+					if (keys.next()) {
+						emp.setEmpId(keys.getInt(1));
+					} else {
+						emp.setEmpId(nextEmpId);
+					}
+				}
 			}
 
-			System.out.print("\nLast Name: ");
-			String last = scanner.nextLine();
-			if (!last.isBlank()) {
-				emp.setLastName(last);
+			if (emp.getJobTitle() != null && !emp.getJobTitle().isBlank()) {
+				int jtId = employeeService.ensureJobTitle(emp.getJobTitle());
+				if (jtId > 0) {
+					try (PreparedStatement ps = conn.prepareStatement(
+							"INSERT INTO employee_job_titles (emp_id, job_title_id) VALUES (?, ?)")) {
+						ps.setInt(1, emp.getEmpId());
+						ps.setInt(2, jtId);
+						ps.executeUpdate();
+					}
+				}
 			}
 
-			System.out.print("\nSSN: ");
-			String ssn = scanner.nextLine();
-			if (!ssn.isBlank()) {
-				emp.setSsn(ssn);
+			if (emp.getDivision() != null && !emp.getDivision().isBlank()) {
+				int divId = employeeService.ensureDivision(emp.getDivision());
+				if (divId > 0) {
+					try (PreparedStatement ps = conn.prepareStatement(
+							"INSERT INTO employee_division (emp_id, div_id) VALUES (?, ?)")) {
+						ps.setInt(1, emp.getEmpId());
+						ps.setInt(2, divId);
+						ps.executeUpdate();
+					}
+				}
 			}
 
-			System.out.print("\nHire date (YYYY-MM-DD): ");
-			String hireDateStr = scanner.nextLine();
-			if (!hireDateStr.isBlank()) {
-				emp.setHireDate(java.time.LocalDate.parse(hireDateStr));
-			}
-
-			System.out.print("\nSalary: ");
-			String sal = scanner.nextLine();
-			if (!sal.isBlank()) {
-				double salaryVal = Double.parseDouble(sal);
-				emp.setCurrentSalary(salaryVal);
-			}
-
-			
-			System.out.print("\nEmail: ");
-			String email = scanner.nextLine();
-			if (!email.isBlank()) {
-				emp.setEmail(email);
-			}
-
-			System.out.print("\nPassword: ");
-			String password = scanner.nextLine();
-			if (!password.isBlank()) {
-				emp.setPasswordHash(password);
-			}	
-			
-			System.out.print("\nDOB (YYYY-MM-DD): ");
-			String dobStr = scanner.nextLine();
-			if (!dobStr.isBlank()) {
-				emp.setDob(java.time.LocalDate.parse(dobStr));
-			}
-
-			System.out.print("\nDivision: ");
-			String division = scanner.nextLine();
-			if (!division.isBlank()) {
-				emp.setDivision(division);
-			}
-
-			System.out.print("\nJob Title ID: ");
-			String title = scanner.nextLine();
-			if (!title.isBlank()) {
-				emp.setJobTitle(title);
-			}
-
-			employeeService.insertEmployee(emp);
-			// employees.add(Employee.buildEmployee());
-
-			System.out.println(ANSI.GREEN + "Employee created successfully." + ANSI.RESET);
+			employees.add(emp); 
+			conn.commit();
+			conn.setAutoCommit(previousAutoCommit);
+			System.out.println(ANSI.GREEN + "Employee created successfully and saved to database." + ANSI.RESET);
 
 		} catch (Exception e) {
-			System.out.println(ANSI.RED + "Error: " + e.getMessage() + ANSI.RESET);
+			try {
+				if (conn != null) {
+					conn.rollback();
+				}
+			} catch (SQLException ignored) {}
+			System.out.println(ANSI.RED + "Error creating employee: " + e.getMessage() + ANSI.RESET);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.setAutoCommit(previousAutoCommit);
+				} catch (SQLException ignored) {}
+			}
+		}
+	}
+
+	private static int getNextEmployeeId(Connection conn) throws SQLException {
+		String sql = "SELECT COALESCE(MAX(emp_id), 0) + 1 AS next_id FROM employees";
+		try (PreparedStatement ps = conn.prepareStatement(sql);
+			 ResultSet rs = ps.executeQuery()) {
+			if (rs.next()) {
+				return rs.getInt("next_id");
+			}
+			throw new SQLException("Could not determine next employee id.");
 		}
 	}
 
 
-	private static void updateEmployeeData(Scanner scanner) { // @eden add error handling for incorrect input types
+	private static void updateEmployeeData(Scanner scanner) { 
 		System.out.print("Enter Employee ID to update: ");
 		try {
 			int id = Integer.parseInt(scanner.nextLine());
@@ -371,8 +416,6 @@ public class App {
 	}
 
 	private static void bulkSalaryIncrease(Scanner scanner) {
-		// @eden add error handling for incorrect types
-		// for example: entering "d" will correctly send you back to the selection page, but the program accepts an input of "3d" 
 		try {
 			System.out.print("Enter percentage increase (e.g., 5 for 5%): ");
 			double percent = Double.parseDouble(scanner.nextLine());

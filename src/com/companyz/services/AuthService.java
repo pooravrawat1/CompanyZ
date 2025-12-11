@@ -1,33 +1,30 @@
 package com.companyz.services;
 
 import com.companyz.models.Employee;
-import java.util.List;
+import java.sql.SQLException;
 
-/**
- * Very small, in-memory authentication helper.
- */
 public class AuthService {
-    private final List<Employee> employees;
+    private static AuthService instance;
+    private final AuthDAO authDAO;
 
-    public AuthService(List<Employee> employees) {
-        this.employees = employees;
+    private AuthService() {
+        this.authDAO = new AuthDAO();
     }
 
-    public Employee authenticate(int empId, String passwordPlain) {
-        if (passwordPlain == null) {
-            System.out.println("Password or username incorrect. Please try again.");
+    public static AuthService getInstance() {
+        if (instance == null) {
+            instance = new AuthService();
+        }
+        return instance;
+    }
+
+    public Employee authenticate(int empId, String password) {
+        try {
+            return authDAO.getEmployeeByIdAndPassword(empId, password);
+        } catch (SQLException e) {
+            e.printStackTrace();
             return null;
         }
-        Employee employee = employees.stream()
-                .filter(e -> e.getEmpId() == empId && passwordPlain.equals(e.getPasswordHash()))
-                .findFirst()
-                .orElse(null);
-        
-        if (employee == null) {
-            System.out.println("Password or username incorrect. Please try again.");
-        }
-        
-        return employee;
     }
 
     public boolean isAdmin(Employee employee) {

@@ -13,7 +13,7 @@ public class Employee {
     private String email;
     private String jobTitle;
     private String division;
-    private String passwordHash;
+    private String password;
     private String role; // admin or employee
     private int jobTitleID;
     
@@ -35,8 +35,8 @@ public class Employee {
         this.role = role;
         this.jobTitleID = jobTitleID;
     }
-    
-    // Getters and Setters
+
+
     public int getEmpId() { return empId; }
     public void setEmpId(int empId) { this.empId = empId; }
     
@@ -70,8 +70,8 @@ public class Employee {
     public String getDivision() { return division; }
     public void setDivision(String division) { this.division = division; }
     
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
     
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }

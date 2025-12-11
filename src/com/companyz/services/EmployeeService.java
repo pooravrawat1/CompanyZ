@@ -72,6 +72,52 @@ public class EmployeeService {
         return employees;
     }
 
+    public void hydrateJobTitleAndDivision(List<Employee> list) {
+        if (list == null) return;
+        for (Employee e : list) {
+            try {
+                String jt = getJobTitleName(e.getEmpId());
+                if (jt != null && !jt.isEmpty()) {
+                    e.setJobTitle(jt);
+                }
+            } catch (Exception ignored) {}
+            try {
+                String dv = getDivisionName(e.getEmpId());
+                if (dv != null && !dv.isEmpty()) {
+                    e.setDivision(dv);
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private String getJobTitleName(int empId) {
+        try {
+            java.sql.ResultSet rs = DatabaseManager.executeQuery(
+                "SELECT jt.job_title_name FROM employee_job_titles ejt JOIN job_titles jt ON ejt.job_title_id = jt.job_title_id WHERE ejt.emp_id = ? LIMIT 1",
+                new Object[]{ empId }
+            );
+            String name = rs.next() ? rs.getString("job_title_name") : null;
+            rs.close();
+            return name;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String getDivisionName(int empId) {
+        try {
+            java.sql.ResultSet rs = DatabaseManager.executeQuery(
+                "SELECT d.div_name FROM employee_division ed JOIN division d ON ed.div_id = d.div_id WHERE ed.emp_id = ? LIMIT 1",
+                new Object[]{ empId }
+            );
+            String name = rs.next() ? rs.getString("div_name") : null;
+            rs.close();
+            return name;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     public void updateEmployee(Employee updated) {
         if (updated == null) {
             throw new IllegalArgumentException("Employee cannot be null");
@@ -98,24 +144,123 @@ public class EmployeeService {
         if (emp.getDob() == null || emp.getHireDate() == null) {
             throw new IllegalArgumentException("Employee date of birth and hire date cannot be null");
         }
-        
-        String sql = "INSERT INTO employees (empid, first_name, last_name, ssn, dob, hire_date, current_salary, email, password_hash, role) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
-        DatabaseManager.executeUpdate(sql, new Object[]{
-            emp.getEmpId(), 
-            emp.getFirstName(), 
-            emp.getLastName(), 
-            emp.getSsn(), 
-            Date.valueOf(emp.getDob()), 
-            Date.valueOf(emp.getHireDate()), 
-            emp.getCurrentSalary(), 
-            emp.getEmail(), 
-            emp.getPasswordHash(), 
-            "EMPLOYEE"
-        });
-        
-        employees.add(emp);
+        String sql = "INSERT INTO employees (first_name, last_name, ssn, dob, hire_date, salary, email, password, role) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (java.sql.PreparedStatement ps = DatabaseManager.getConnection()
+                .prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, emp.getFirstName());
+            ps.setString(2, emp.getLastName());
+            ps.setString(3, emp.getSsn());
+            ps.setDate(4, Date.valueOf(emp.getDob()));
+            ps.setDate(5, Date.valueOf(emp.getHireDate()));
+            ps.setDouble(6, emp.getCurrentSalary());
+            ps.setString(7, emp.getEmail());
+            ps.setString(8, emp.getPassword());
+            ps.setString(9, "EMPLOYEE");
+
+            int rows = ps.executeUpdate();
+            System.out.println("Insert employees affected rows: " + rows);
+
+            try (java.sql.ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    emp.setEmpId(keys.getInt(1));
+                    System.out.println("Inserted employee with ID: " + emp.getEmpId());
+                }
+            }
+
+            employees.add(emp);
+            System.out.println("Employee added in-memory list with ID: " + emp.getEmpId());
+        } catch (Exception e) {
+            System.out.println("Failed to insert employee: " + e.getMessage());
+        }
+    }
+
+    public int ensureJobTitle(String jobTitleName) {
+        try {
+            java.sql.ResultSet rs = DatabaseManager.executeQuery(
+                "SELECT job_title_id FROM job_titles WHERE job_title_name = ?",
+                new Object[]{ jobTitleName }
+            );
+            if (rs.next()) {
+                int id = rs.getInt("job_title_id");
+                rs.close();
+                return id;
+            }
+            rs.close();
+
+            DatabaseManager.executeUpdate(
+                "INSERT INTO job_titles (job_title_name) VALUES (?)",
+                new Object[]{ jobTitleName }
+            );
+            java.sql.ResultSet rs2 = DatabaseManager.executeQuery("SELECT LAST_INSERT_ID() AS id");
+            int id = rs2.next() ? rs2.getInt("id") : 0;
+            rs2.close();
+            return id;
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
+    public int ensureDivision(String divisionName) {
+        try {
+            java.sql.ResultSet rs = DatabaseManager.executeQuery(
+                "SELECT div_id FROM division WHERE div_name = ?",
+                new Object[]{ divisionName }
+            );
+            if (rs.next()) {
+                int id = rs.getInt("div_id");
+                rs.close();
+                return id;
+            }
+            rs.close();
+
+            DatabaseManager.executeUpdate(
+                "INSERT INTO division (div_name) VALUES (?)",
+                new Object[]{ divisionName }
+            );
+            java.sql.ResultSet rs2 = DatabaseManager.executeQuery("SELECT LAST_INSERT_ID() AS id");
+            int id = rs2.next() ? rs2.getInt("id") : 0;
+            rs2.close();
+            return id;
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
+    public void assignJobTitle(int empId, String jobTitleName) {
+        int jtId = ensureJobTitle(jobTitleName);
+        if (jtId == 0) {
+            System.out.println("Could not ensure job title '" + jobTitleName + "'");
+            return;
+        }
+        try {
+            DatabaseManager.executeUpdate(
+                "INSERT INTO employee_job_titles (emp_id, job_title_id) VALUES (?, ?)",
+                new Object[]{ empId, jtId }
+            );
+            System.out.println("Assigned job title '" + jobTitleName + "' (id=" + jtId + ") to emp " + empId);
+        } catch (Exception ignored) {
+            System.out.println("Failed to assign job title '" + jobTitleName + "' to emp " + empId);
+        }
+    }
+
+    public void assignDivision(int empId, String divisionName) {
+        int divId = ensureDivision(divisionName);
+        if (divId == 0) {
+            System.out.println("Could not ensure division '" + divisionName + "'");
+            return;
+        }
+        try {
+            DatabaseManager.executeUpdate(
+                "INSERT INTO employee_division (emp_id, div_id) VALUES (?, ?)",
+                new Object[]{ empId, divId }
+            );
+            System.out.println("Assigned division '" + divisionName + "' (id=" + divId + ") to emp " + empId);
+        } catch (Exception e) {
+            System.out.println("Failed to assign division '" + divisionName + "' to emp " + empId + ": " + e.getMessage());
+        }
     }
 
     public void updateSalaryByPercentage(int empId, double percent) {
