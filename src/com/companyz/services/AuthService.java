@@ -14,10 +14,20 @@ public class AuthService {
     }
 
     public Employee authenticate(int empId, String passwordPlain) {
-        return employees.stream()
+        if (passwordPlain == null) {
+            System.out.println("Password or username incorrect. Please try again.");
+            return null;
+        }
+        Employee employee = employees.stream()
                 .filter(e -> e.getEmpId() == empId && passwordPlain.equals(e.getPasswordHash()))
                 .findFirst()
                 .orElse(null);
+        
+        if (employee == null) {
+            System.out.println("Password or username incorrect. Please try again.");
+        }
+        
+        return employee;
     }
 
     public boolean isAdmin(Employee employee) {
